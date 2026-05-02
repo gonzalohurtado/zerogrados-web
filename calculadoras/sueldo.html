@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Calculadora Sueldo Líquido Chile</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #F3F4F6; min-height: 100vh; padding: 16px; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+  a { text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  input.money-input:focus { border-color: #2563EB !important; outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+  @media (max-width: 700px) {
+    .grid-2col { grid-template-columns: 1fr !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+const AFP_DATA = [
+  { nombre: "Capital",  comision: 1.44, total: 11.44 },
+  { nombre: "Cuprum",   comision: 1.44, total: 11.44 },
+  { nombre: "Habitat",  comision: 1.27, total: 11.27 },
+  { nombre: "Modelo",   comision: 0.58, total: 10.58 },
+  { nombre: "PlanVital",comision: 1.16, total: 11.16 },
+  { nombre: "ProVida",  comision: 1.45, total: 11.45 },
+  { nombre: "Uno",      comision: 0.46, total: 10.46 },
+];
+
+const TRAMOS = [
+  { desde: 310, tasa: 0.400, rebaja: 38.82 },
+  { desde: 120, tasa: 0.350, rebaja: 23.32 },
+  { desde:  90, tasa: 0.304, rebaja: 17.80 },
+  { desde:  70, tasa: 0.230, rebaja: 11.14 },
+  { desde:  50, tasa: 0.135, rebaja:  4.49 },
+  { desde:  30, tasa: 0.080, rebaja:  1.74 },
+  { desde: 13.5,tasa: 0.040, rebaja:  0.54 },
+];
+
+const fmt     = n => Math.round(n).toLocaleString('es-CL', {style:'currency',currency:'CLP',minimumFractionDigits:0});
+const fmtNum  = n => Math.round(n).toLocaleString('es-CL');
+const fpct    = n => `${(+n).toFixed(2)}%`;
+
+function parseLocaleNum(str) {
+  if (typeof str === 'number') return str;
+  const clean = str.replace(/\./g, '').replace(',', '.');
+  const n = parseFloat(clean);
+  return isNaN(n) ? 0 : n;
+}
+
+function MoneyInput({ value, onChange, width = 130, decimals = false, pct = false, bold = false, bigFont = false, blueColor = false }) {
+  const [focused, setFocused] = React.useState(false);
+  const [raw, setRaw] = React.useState('');
+  const handleFocus = (e) => { setFocused(true); setRaw(decimals || pct ? String(value) : String(Math.round(value))); setTimeout(() => e.target.select(), 0); };
+  const handleBlur = () => { setFocused(false); onChange(parseLocaleNum(raw)); };
+  const handleChange = (e) => { setRaw(e.target.value.replace(/[^\d.,-]/g, '')); };
+  const handleKeyDown = (e) => { if (e.key === 'Enter') e.target.blur(); };
+  const display = focused ? raw : pct ? value.toFixed(2) : decimals ? value.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : fmtNum(value);
+  const widthStyle = typeof width === 'string' ? { width } : { width };
+  return (<input className="money-input" type="text" inputMode="decimal" value={display} onFocus={handleFocus} onBlur={handleBlur} onChange={handleChange} onKeyDown={handleKeyDown} style={{...widthStyle, textAlign: 'right', padding: '4px 8px', border: `1px solid ${blueColor ? '#DBEAFE' : '#D1D5DB'}`, borderRadius: 6, fontSize: bigFont ? 14 : 13, fontWeight: bold ? 700 : 400, color: blueColor ? '#1E40AF' : '#1F2937', fontFamily: 'inherit', background: 'white', boxSizing: 'border-box'}}/>);
+}
+
+function calcLiquido(sb, { afpRate, isapreRate, adicIsapre, colacion, internet, anticipoBono, seguroSalud, cuotaSindical, uf, utm, imm, topeSalud, topeCesantia }) {
+  const cesRate = 0.006;
+  const grat = Math.min(sb * 0.25, 4.75 * imm / 12);
+  const habImp = sb + grat;
+  const topeSalP = topeSalud * uf;
+  const topeCesP = topeCesantia * uf;
+  const descAfp = (habImp > topeSalP ? topeSalP : habImp) * afpRate;
+  const descIsa = (habImp > topeSalP ? topeSalP : habImp) * isapreRate;
+  const descCes = (habImp > topeCesP ? topeCesP : habImp) * cesRate;
+  const baseTrib = habImp - descAfp - descIsa - descCes - adicIsapre;
+  let imp = 0;
+  for (const t of TRAMOS) { if (baseTrib > utm * t.desde) { imp = Math.max(0, baseTrib * t.tasa - utm * t.rebaja); break; } }
+  return habImp + colacion + internet - descAfp - descIsa - descCes - adicIsapre - imp - anticipoBono - seguroSalud - cuotaSindical;
+}
+
+function buscarSueldoBase(liquidoObj, params) {
+  let lo = 100000, hi = 50000000;
+  for (let i = 0; i < 80; i++) { const mid = (lo + hi) / 2; const liq = calcLiquido(mid, params); if (Math.abs(liq - liquidoObj) < 1) return Math.round(mid); if (liq < liquidoObj) lo = mid; else hi = mid; }
+  return Math.round((lo + hi) / 2);
+}
+
+function Calculadora() {
+  const today = new Date().toISOString().slice(0,10);
+  const [modo, setModo] = useState('bruto');
+  const [liquidoObj, setLiquidoObj] = useState(3000000);
+  const [sueldoBase, setSueldoBase] = useState(3637843);
+  const [afpIdx, setAfpIdx] = useState(2);
+  const [isaprePct, setIsaprePct] = useState(7.0);
+  const [adicIsapre, setAdicIsapre] = useState(0);
+  const [colacion, setColacion] = useState(48300);
+  const [internet, setInternet] = useState(10000);
+  const [anticipoBono, setAnticipoBono] = useState(0);
+  const [seguroSalud, setSeguroSalud] = useState(0);
+  const [cuotaSindical, setCuotaSindical] = useState(0);
+  const [uf, setUf] = useState(40120.20);
+  const [utm, setUtm] = useState(69889);
+  const [imm, setImm] = useState(539000);
+  const [topeSalud, setTopeSalud] = useState(89.9);
+  const [topeCesantia, setTopeCesantia] = useState(135.2);
+  const [fecha, setFecha] = useState(today);
+  const [loading, setLoading] = useState(false);
+  const [apiMsg, setApiMsg] = useState('');
+
+  const fetchIndicadores = useCallback(async (f) => {
+    setLoading(true); setApiMsg('Consultando mindicador.cl…');
+    const [y,m,d] = f.split('-'); const dd = `${d}-${m}-${y}`;
+    try {
+      const [rUf, rUtm, rImm] = await Promise.allSettled([
+        fetch(`https://mindicador.cl/api/uf/${dd}`).then(r=>r.json()),
+        fetch(`https://mindicador.cl/api/utm/${dd}`).then(r=>r.json()),
+        fetch(`https://mindicador.cl/api/imm/${dd}`).then(r=>r.json()),
+      ]);
+      let ok=[];
+      if(rUf.status==='fulfilled' && rUf.value.serie?.length) { setUf(rUf.value.serie[0].valor); ok.push('UF'); }
+      if(rUtm.status==='fulfilled' && rUtm.value.serie?.length) { setUtm(rUtm.value.serie[0].valor); ok.push('UTM'); }
+      if(rImm.status==='fulfilled' && rImm.value.serie?.length) { setImm(rImm.value.serie[0].valor); ok.push('IMM'); }
+      setApiMsg(ok.length ? `✓ Actualizados: ${ok.join(', ')}` : 'Sin datos para esa fecha.');
+    } catch(e) { setApiMsg('⚠ Sin conexión.'); }
+    setLoading(false);
+  }, []);
+  useEffect(() => { fetchIndicadores(today); }, []);
+
+  const params = { afpRate: AFP_DATA[afpIdx].total/100, isapreRate: isaprePct/100, adicIsapre, colacion, internet, anticipoBono, seguroSalud, cuotaSindical, uf, utm, imm, topeSalud, topeCesantia };
+  const sbEfectivo = modo === 'liquido' ? buscarSueldoBase(liquidoObj, params) : sueldoBase;
+  const afpRate = AFP_DATA[afpIdx].total / 100;
+  const cesRate = 0.006;
+  const grat = Math.min(sbEfectivo * 0.25, 4.75 * imm / 12);
+  const habImp = sbEfectivo + grat;
+  const topeSalPesos = topeSalud * uf;
+  const topeCesPesos = topeCesantia * uf;
+  const descAfp = (habImp > topeSalPesos ? topeSalPesos : habImp) * afpRate;
+  const descIsapre = (habImp > topeSalPesos ? topeSalPesos : habImp) * (isaprePct/100);
+  const descCes = (habImp > topeCesPesos ? topeCesPesos : habImp) * cesRate;
+  const baseTrib = habImp - descAfp - descIsapre - descCes - adicIsapre;
+  let impuesto = 0;
+  for(const t of TRAMOS) { if(baseTrib > utm * t.desde) { impuesto = Math.max(0, baseTrib * t.tasa - utm * t.rebaja); break; } }
+  const totalHaberes = habImp + colacion + internet;
+  const totalDescLeg = descAfp + descIsapre + descCes + adicIsapre;
+  const totalDescVar = anticipoBono + seguroSalud + cuotaSindical;
+  const liquido = totalHaberes - totalDescLeg - impuesto - totalDescVar;
+  const costoAFC = habImp * 0.024; const costoSIS = habImp * 0.0188; const costoMutual = habImp * 0.0127;
+  const costoEmp = totalHaberes + costoAFC + costoSIS + costoMutual;
+  const card = (bg='white', border='#E5E7EB') => ({background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: 18, marginBottom: 14});
+  const NumInput = ({label, value, onChange, pct=false, wide=false}) => (<div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'5px 0',borderBottom:'1px solid #F3F4F6'}}><span style={{fontSize:13,color:'#374151',flex:1}}>{label}</span><div style={{display:'flex',alignItems:'center',gap:4}}>{!pct && <span style={{fontSize:12,color:'#9CA3AF'}}>$</span>}<MoneyInput value={value} onChange={onChange} width={wide?150:pct?70:130} pct={pct} decimals={pct}/>{pct && <span style={{fontSize:12,color:'#9CA3AF'}}>%</span>}</div></div>);
+  const Row = ({label, value, bold, neg, sub, color}) => (<div style={{display:'flex',justifyContent:'space-between',padding:bold?'7px 0':'4px 0',paddingLeft:sub?14:0,borderTop:bold?'1px solid #E5E7EB':'none'}}><span style={{fontSize:sub?12:13,fontWeight:bold?700:400,color:sub?'#9CA3AF':'#374151'}}>{label}</span><span style={{fontSize:13,fontWeight:bold?700:400,color:color||(neg?'#DC2626':'#1F2937'),fontVariantNumeric:'tabular-nums'}}>{neg && value>0 ? '- ' : ''}{fmt(Math.abs(value))}</span></div>);
+  const SectionTitle = ({text, color='#1E3A8A', border='#2563EB'}) => (<h3 style={{fontSize:13,fontWeight:700,color,margin:'0 0 12px',borderBottom:`2px solid ${border}`,paddingBottom:6,textTransform:'uppercase',letterSpacing:0.5}}>{text}</h3>);
+  return (<div style={{maxWidth:960,margin:'0 auto'}}>
+      <div style={{textAlign:'center',padding:'20px 0 14px',borderBottom:'3px solid #1E40AF',marginBottom:16}}>
+        <div style={{fontSize:11,color:'#6B7280',letterSpacing:2,textTransform:'uppercase',marginBottom:4}}>Zero Grados · Compensaciones</div>
+        <h1 style={{fontSize:24,fontWeight:800,color:'#1E3A8A'}}>Calculadora de Sueldo Líquido</h1>
+        <p style={{fontSize:12,color:'#6B7280',marginTop:4}}>Chile · Estimación referencial mensual</p>
+        <div style={{display:'inline-flex',marginTop:14,borderRadius:10,overflow:'hidden',border:'2px solid #E5E7EB'}}>
+          {[{id:'bruto',label:'Bruto → Líquido',icon:'💰'},{id:'liquido',label:'Líquido → Bruto',icon:'🔄'}].map(({id,label,icon})=>(
+            <button key={id} onClick={()=>setModo(id)} style={{padding:'9px 22px',border:'none',cursor:'pointer',fontSize:13,fontWeight:700,background:modo===id?(id==='liquido'?'#4F46E5':'#2563EB'):'white',color:modo===id?'white':'#6B7280'}}>{icon} {label}</button>
+          ))}
+        </div>
+      </div>
+      <div style={{background:'#EFF6FF',border:'1px solid #BFDBFE',borderRadius:10,padding:16,marginBottom:16}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',marginBottom:12}}>
+          <span style={{fontSize:13,fontWeight:700,color:'#1E40AF'}}>📅 Indicadores económicos:</span>
+          <input type="date" value={fecha} onChange={e=>setFecha(e.target.value)} style={{padding:'5px 10px',borderRadius:6,border:'1px solid #93C5FD',fontSize:13}}/>
+          <button onClick={()=>fetchIndicadores(fecha)} disabled={loading} style={{padding:'5px 16px',borderRadius:6,border:'none',fontSize:13,fontWeight:700,background:loading?'#93C5FD':'#2563EB',color:'white',cursor:loading?'wait':'pointer'}}>{loading?'Cargando…':'Actualizar'}</button>
+          {apiMsg && <span style={{fontSize:12,color:'#1D4ED8'}}>{apiMsg}</span>}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:8}}>
+          {[{label:'UF del día',val:uf,set:setUf,dec:true},{label:'UTM del mes',val:utm,set:setUtm,dec:false},{label:'Ingreso Mínimo',val:imm,set:setImm,dec:false},{label:'Tope Salud (UF)',val:topeSalud,set:setTopeSalud,dec:true},{label:'Tope Ces. (UF)',val:topeCesantia,set:setTopeCesantia,dec:true}].map(({label,val,set,dec})=>(
+            <div key={label} style={{background:'white',borderRadius:7,padding:'8px 10px'}}>
+              <div style={{fontSize:10,color:'#6B7280',textTransform:'uppercase',marginBottom:4}}>{label}</div>
+              <MoneyInput value={val} onChange={set} decimals={dec} width="100%" bold={true} bigFont={true} blueColor={true}/>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="grid-2col" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+        <div>
+          <div style={card()}>
+            <SectionTitle text="Haberes Imponibles"/>
+            {modo==='liquido' && (<div style={{background:'#EEF2FF',border:'2px solid #4F46E5',borderRadius:8,padding:'10px 12px',marginBottom:10}}>
+              <div style={{fontSize:11,color:'#4F46E5',fontWeight:700,textTransform:'uppercase',marginBottom:6}}>🔄 Líquido Objetivo</div>
+              <NumInput label="¿Cuánto quieres recibir?" value={liquidoObj} onChange={setLiquidoObj} wide/>
+              <div style={{marginTop:8,padding:'8px 10px',background:'white',borderRadius:6}}>
+                <div style={{fontSize:11,color:'#6B7280'}}>Sueldo Base calculado</div>
+                <div style={{fontSize:18,fontWeight:800,color:'#4F46E5'}}>{fmt(sbEfectivo)}</div>
+              </div>
+            </div>)}
+            {modo==='bruto' && <NumInput label="Sueldo Base Mensual" value={sueldoBase} onChange={setSueldoBase} wide/>}
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'5px 0',borderBottom:'1px solid #F3F4F6'}}>
+              <span style={{fontSize:13,color:'#374151'}}>AFP</span>
+              <select value={afpIdx} onChange={e=>setAfpIdx(+e.target.value)} style={{padding:'5px 10px',borderRadius:6,border:'1px solid #D1D5DB',fontSize:13}}>
+                {AFP_DATA.map((a,i)=>(<option key={a.nombre} value={i}>{a.nombre} — {a.total}% (comisión {a.comision}%)</option>))}
+              </select>
+            </div>
+            <NumInput label="Salud (Fonasa / Isapre)" value={isaprePct} onChange={setIsaprePct} pct/>
+            <NumInput label="Adicional Isapre" value={adicIsapre} onChange={setAdicIsapre}/>
+          </div>
+          <div style={card()}><SectionTitle text="No Imponibles"/><NumInput label="Colación" value={colacion} onChange={setColacion}/><NumInput label="Internet" value={internet} onChange={setInternet}/></div>
+          <div style={card()}><SectionTitle text="Descuentos Varios"/><NumInput label="Anticipo de Bono" value={anticipoBono} onChange={setAnticipoBono}/><NumInput label="Seguro de Salud" value={seguroSalud} onChange={setSeguroSalud}/><NumInput label="Cuota Sindical" value={cuotaSindical} onChange={setCuotaSindical}/></div>
+          <div style={{background:'#F8FAFC',border:'1px solid #E2E8F0',borderRadius:8,padding:12,fontSize:11,color:'#64748B'}}>
+            <strong style={{color:'#334155'}}>Tasas AFP 2026</strong><br/>
+            {AFP_DATA.map(a=>(<span key={a.nombre} style={{display:'inline-block',marginRight:10,marginTop:4}}>{a.nombre}: <strong>{a.total}%</strong></span>))}
+          </div>
+        </div>
+        <div>
+          <div style={card()}><SectionTitle text="Detalle Remuneración"/>
+            <Row label="Sueldo Base" value={sbEfectivo}/>
+            <Row label="Gratificación (auto)" value={grat} sub/>
+            <Row label="Haberes Imponibles" value={habImp} bold/>
+            <Row label="Colación" value={colacion} sub/>
+            <Row label="Internet" value={internet} sub/>
+            <Row label="Total Haberes" value={totalHaberes} bold color='#1E40AF'/>
+          </div>
+          <div style={card()}><SectionTitle text="Descuentos Legales" color='#991B1B' border='#DC2626'/>
+            <Row label={`AFP ${AFP_DATA[afpIdx].nombre} (${AFP_DATA[afpIdx].total}%)`} value={descAfp} neg/>
+            <Row label={`Salud (${isaprePct.toFixed(2)}%)`} value={descIsapre} neg/>
+            <Row label="Seg. Cesantía (0.60%)" value={descCes} neg/>
+            {adicIsapre>0 && <Row label="Adicional Isapre" value={adicIsapre} neg/>}
+            <Row label="Total Previsional" value={totalDescLeg} bold neg/>
+            <div style={{height:8}}/>
+            <Row label="Base Tributable" value={baseTrib}/>
+            <Row label="Impuesto Único 2ª Cat." value={impuesto} neg/>
+            {totalDescVar>0 && <Row label="Descuentos Varios" value={totalDescVar} neg/>}
+          </div>
+          <div style={{background:'linear-gradient(135deg,#059669,#047857)',borderRadius:12,padding:20,marginBottom:14,color:'white'}}>
+            <div style={{fontSize:11,opacity:0.8,textTransform:'uppercase',letterSpacing:1.5}}>Sueldo Líquido Estimado</div>
+            <div style={{fontSize:32,fontWeight:900,letterSpacing:-1,marginTop:4}}>{fmt(liquido)}</div>
+            <div style={{textAlign:'right',fontSize:12,opacity:0.85,marginTop:4}}>
+              <div>Bruto: {fmt(totalHaberes)}</div>
+              <div>Descuentos: {fmt(totalDescLeg+impuesto+totalDescVar)}</div>
+              <div style={{fontWeight:700}}>Líq/Bruto: {(liquido/totalHaberes*100).toFixed(1)}%</div>
+            </div>
+          </div>
+          <div style={{background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:10,padding:16}}>
+            <SectionTitle text="Costo Empresa (estimado)" color='#92400E' border='#F59E0B'/>
+            <Row label="Total Haberes" value={totalHaberes} sub/>
+            <Row label="AFC Empleador (2.40%)" value={costoAFC} sub/>
+            <Row label="SIS (1.88%)" value={costoSIS} sub/>
+            <Row label="Mutual (1.27%)" value={costoMutual} sub/>
+            <Row label="Costo Total Empresa" value={costoEmp} bold color='#92400E'/>
+          </div>
+        </div>
+      </div>
+      <div style={{textAlign:'center',fontSize:11,color:'#9CA3AF',padding:'16px 0 8px',borderTop:'1px solid #E5E7EB',marginTop:8}}>
+        Estimación referencial. Tabla IUSC vigente 2026. Fuente AFP: Superintendencia de Pensiones.
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Calculadora/>);
+</script>
+</body>
+</html>
