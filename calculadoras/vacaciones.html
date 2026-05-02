@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Días Progresivos — Legislación Chilena</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; background: #f1f5f9; color: #1e293b; padding: 24px 16px; }
+  .container { max-width: 720px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); border-radius: 16px; padding: 28px 32px; margin-bottom: 24px; color: #fff; }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header p { font-size: 14px; opacity: 0.85; }
+  .card { background: #fff; border-radius: 14px; padding: 24px 28px; margin-bottom: 20px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .card.highlight { border: 2px solid #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+  .card h2 { font-size: 16px; font-weight: 700; color: #334155; margin-bottom: 16px; }
+  label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #334155; }
+  .hint { font-size: 12px; color: #64748b; margin-bottom: 12px; }
+  .input-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  input[type=number] { flex: 1; min-width: 160px; padding: 12px 16px; font-size: 18px; font-weight: 600; border: 2px solid #cbd5e1; border-radius: 10px; outline: none; color: #1e293b; background: #f8fafc; }
+  .equiv-box { background: #f1f5f9; border-radius: 10px; padding: 10px 16px; text-align: center; min-width: 140px; }
+  .equiv-box .small { font-size: 12px; color: #64748b; }
+  .equiv-box .big { font-size: 16px; font-weight: 700; color: #1e3a5f; }
+  .progress-section { margin-top: 16px; }
+  .progress-track { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #ef4444); border-radius: 4px; transition: width 0.4s; }
+  .result-cards { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+  .result-card { flex: 1; min-width: 160px; border-radius: 12px; padding: 16px 20px; text-align: center; }
+  .result-card .label { font-size: 11px; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+  .result-card .number { font-size: 36px; font-weight: 800; }
+  .result-card.base { background: #f0f9ff; border: 1px solid #bfdbfe; }
+  .result-card.base .number { color: #2563eb; }
+  .result-card.prog { border: 1px solid #e2e8f0; }
+  .result-card.prog.active { background: #f0fdf4; border-color: #86efac; }
+  .result-card.prog .number { color: #94a3b8; }
+  .result-card.prog.active .number { color: #16a34a; }
+  .result-card.total { background: linear-gradient(135deg, #1e3a5f, #2563eb); }
+  .result-card.total .number { color: #fff; }
+  .operator { font-size: 24px; color: #94a3b8; display: flex; align-items: center; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .bar-label { width: 140px; font-size: 13px; color: #475569; text-align: right; }
+  .bar-track { flex: 1; height: 28px; background: #f1f5f9; border-radius: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; transition: width 0.5s; }
+  .bar-fill span { color: #fff; font-size: 12px; font-weight: 600; }
+  .legal-box { background: #f8fafc; border-radius: 10px; padding: 16px 20px; border-left: 4px solid #2563eb; }
+  .legal-box .title { font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px; }
+  .legal-box p { font-size: 13px; color: #475569; line-height: 1.6; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { padding: 10px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 600; }
+  td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+  td.center { text-align: center; }
+  tr.active-row { background: #eff6ff !important; font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .badge.green { background: #dcfce7; color: #166534; }
+  .badge.gray { background: #f1f5f9; color: #94a3b8; }
+  td.total-col { font-weight: 700; color: #1e3a5f; text-align: center; }
+  .expand-btn { display: flex; align-items: center; justify-content: space-between; background: none; border: none; cursor: pointer; padding: 0; font-size: 15px; font-weight: 700; color: #334155; width: 100%; }
+  .legal-content { margin-top: 16px; font-size: 13px; color: #475569; line-height: 1.7; }
+  .warning-box { background: #fffbeb; border-radius: 8px; padding: 12px 16px; border: 1px solid #fde68a; margin-top: 8px; }
+  .footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 20px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Calculadora de Días Progresivos</h1>
+    <p>Legislación Laboral Chilena — Art. 68 del Código del Trabajo</p>
+  </div>
+  <div class="card">
+    <label for="meses">Meses cotizados en el sistema previsional (AFP)</label>
+    <p class="hint">Incluya cotizaciones con todos los empleadores, no solo el actual.</p>
+    <div class="input-row">
+      <input type="number" id="meses" min="0" max="600" placeholder="Ej: 168" oninput="calcular()">
+      <div class="equiv-box"><div class="small">Equivale a</div><div class="big" id="equiv">0 años</div></div>
+    </div>
+    <div id="progress-section" class="progress-section hidden">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <p style="font-size:12px;color:#94a3b8;margin-top:6px" id="progress-note"></p>
+    </div>
+  </div>
+  <div class="card hidden" id="results-card">
+    <h2>Resultado del Cálculo</h2>
+    <div class="result-cards">
+      <div class="result-card base"><div class="label">Vacaciones Base</div><div class="number">15</div><div style="font-size:12px;color:#64748b">días hábiles</div></div>
+      <div class="operator">+</div>
+      <div class="result-card prog" id="prog-card"><div class="label">Días Progresivos</div><div class="number" id="prog-number">0</div><div style="font-size:12px;color:#64748b">días hábiles</div></div>
+      <div class="operator">=</div>
+      <div class="result-card total"><div class="label" style="color:rgba(255,255,255,0.7)">Total Vacaciones</div><div class="number" id="total-number">15</div><div style="font-size:12px;color:rgba(255,255,255,0.7)">días hábiles</div></div>
+    </div>
+    <div id="bars" style="margin-bottom:20px">
+      <div class="bar-row"><span class="bar-label">10 años base</span><div class="bar-track"><div class="bar-fill" id="bar1" style="background:#2563eb;width:0%"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Años excedentes</span><div class="bar-track"><div class="bar-fill" id="bar2" style="background:#16a34a;width:0%"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Trienios completos</span><div class="bar-track"><div class="bar-fill" id="bar3" style="background:#7c3aed;width:0%"></div></div></div>
+    </div>
+    <div class="legal-box"><div class="title">Fundamentación Legal</div><p id="legal-detail"></p><div id="legal-extra"></div></div>
+  </div>
+  <div class="card">
+    <h2>Tabla de Referencia Rápida</h2>
+    <div style="overflow-x:auto"><table><thead><tr><th>Antigüedad (meses)</th><th>Antigüedad (años)</th><th class="center">Días Progresivos</th><th class="center">Total Vacaciones</th></tr></thead><tbody id="ref-table"></tbody></table></div>
+  </div>
+  <div class="card">
+    <button class="expand-btn" onclick="toggleLegal()"><span>Marco Legal y Consideraciones</span><span id="legal-arrow">▾</span></button>
+    <div class="legal-content hidden" id="legal-panel">
+      <p><strong>Base Legal:</strong> El artículo 68 del Código del Trabajo establece que todo trabajador con más de 10 años de trabajo tiene derecho a un día adicional de feriado por cada tres nuevos años trabajados.</p>
+      <p style="margin-top:8px"><strong>Cómputo:</strong> Para acreditar antigüedad con empleadores anteriores, el medio de prueba es el certificado de cotizaciones previsionales de la AFP (Dictamen DT N° 2219/034 de 2016).</p>
+      <div class="warning-box" style="margin-top:8px"><strong style="color:#92400e;font-size:12px">⚠ Nota</strong><p style="font-size:12px;color:#78716c;margin-top:4px">Esta herramienta es de carácter referencial. Para casos específicos consulte la Dirección del Trabajo.</p></div>
+    </div>
+  </div>
+  <p class="footer">Herramienta elaborada conforme al Código del Trabajo de Chile vigente</p>
+</div>
+<script>
+const REF_ROWS=[{m:60,label:'5 años'},{m:120,label:'10 años'},{m:156,label:'13 años'},{m:192,label:'16 años'},{m:228,label:'19 años'},{m:264,label:'22 años'},{m:300,label:'25 años'},{m:360,label:'30 años'},{m:420,label:'35 años'},{m:480,label:'40 años'}];
+function calc(m){const a=Math.floor(m/12),r=m%12;if(a<10)return{dias:0,aniosTotales:a,mesesRestantes:r,aniosExcedentes:0,trienios:0,mesesFaltan:120-m,mesesEnTrienio:0};const exc=m-120,ae=Math.floor(exc/12),tri=Math.floor(ae/3),met=exc-tri*36;return{dias:tri,aniosTotales:a,mesesRestantes:r,aniosExcedentes:ae,trienios:tri,mesesFaltan:36-met,mesesEnTrienio:met};}
+function calcular(){const meses=parseInt(document.getElementById('meses').value)||0;const r=calc(meses);let eq=r.aniosTotales+' año'+(r.aniosTotales!==1?'s':'');if(r.mesesRestantes>0)eq+=' y '+r.mesesRestantes+' mes'+(r.mesesRestantes!==1?'es':'');document.getElementById('equiv').textContent=meses===0?'0 años':eq;const ps=document.getElementById('progress-section');if(meses>0&&meses<120){ps.classList.remove('hidden');const pct=Math.min(meses/120*100,100);document.getElementById('progress-fill').style.width=pct+'%';document.getElementById('progress-note').innerHTML='Faltan <strong>'+(120-meses)+' meses</strong> para el primer día progresivo.';}else{ps.classList.add('hidden');}const rc=document.getElementById('results-card');if(meses>0){rc.classList.remove('hidden');document.getElementById('prog-number').textContent=r.dias;document.getElementById('total-number').textContent=15+r.dias;document.getElementById('prog-card').classList.toggle('active',r.dias>0);rc.classList.toggle('highlight',r.dias>0);const mx=Math.max(r.aniosTotales,10);document.getElementById('bar1').style.width=(Math.min(r.aniosTotales,10)/mx*100)+'%';document.getElementById('bar2').style.width=(r.aniosExcedentes/mx*100)+'%';const mt=Math.max(r.trienios,5);document.getElementById('bar3').style.width=(r.trienios/mt*100)+'%';document.getElementById('legal-detail').textContent=r.dias>0?'Con '+r.aniosTotales+' años de cotizaciones, ha completado '+r.trienios+' trienio(s) sobre los 10 años base, generando '+r.dias+' día(s) progresivo(s).':'No cumple el mínimo de 10 años para generar días progresivos.';}else{rc.classList.add('hidden');}buildTable(meses);}
+function buildTable(cm){const tb=document.getElementById('ref-table');let h='';for(let i=0;i<REF_ROWS.length;i++){const row=REF_ROWS[i],r=calc(row.m),next=i<REF_ROWS.length-1?REF_ROWS[i+1].m:Infinity,act=cm>=row.m&&cm<next;h+='<tr'+(act?' class="active-row"':'')+'><td>'+row.m+'</td><td>'+row.label+'</td><td class="center"><span class="badge '+(r.dias>0?'green':'gray')+'">'+r.dias+'</span></td><td class="total-col">'+(15+r.dias)+'</td></tr>';}tb.innerHTML=h;}
+function toggleLegal(){const p=document.getElementById('legal-panel');p.classList.toggle('hidden');}
+buildTable(0);
+</script>
+</body>
+</html>
