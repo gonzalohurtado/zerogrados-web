@@ -111,12 +111,15 @@
     .salario-card .sal-val { font-size: 1.35rem; font-weight: 700; color: var(--navy); letter-spacing: -0.02em; }
 
     #noticias { background: var(--slate-light); }
-    .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
-    .news-card { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 1.75rem; transition: box-shadow .2s; }
-    .news-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.07); }
-    .news-date { font-size: 0.78rem; color: var(--slate); font-weight: 500; margin-bottom: 0.6rem; }
-    .news-card h3 { font-size: 0.97rem; font-weight: 600; color: var(--navy); line-height: 1.4; margin-bottom: 0.75rem; }
-    .news-card p { font-size: 0.86rem; color: var(--text-sm); line-height: 1.65; }
+    .blog-banner { display: grid; grid-template-columns: 1fr 380px; gap: 3rem; align-items: center; margin-top: 3rem; background: var(--navy); border-radius: 20px; overflow: hidden; min-height: 280px; }
+    .blog-banner-text { padding: 2.5rem 0 2.5rem 2.75rem; }
+    .blog-tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #f97316; background: rgba(249,115,22,.12); border: 1px solid rgba(249,115,22,.3); border-radius: 20px; padding: 3px 12px; margin-bottom: 1rem; }
+    .blog-banner-text h3 { font-size: 1.55rem; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 0.75rem; }
+    .blog-banner-text p { font-size: 0.93rem; color: #94a3b8; line-height: 1.65; margin-bottom: 1.75rem; max-width: 420px; }
+    .blog-cta { display: inline-flex; align-items: center; gap: 0.55rem; background: #f97316; color: #fff; font-size: 0.88rem; font-weight: 600; padding: 0.65rem 1.4rem; border-radius: 8px; text-decoration: none; transition: background .2s, transform .15s; }
+    .blog-cta:hover { background: #ea6c0a; transform: translateY(-1px); }
+    .blog-banner-art { height: 100%; display: flex; align-items: center; justify-content: center; padding: 1.5rem; background: rgba(255,255,255,.03); }
+    @media (max-width: 700px) { .blog-banner { grid-template-columns: 1fr; } .blog-banner-art { display: none; } .blog-banner-text { padding: 2rem 1.5rem; } }
 
     #contacto { background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%); color: var(--white); }
     #contacto .section-label { color: #93c5fd; }
@@ -308,10 +311,16 @@
     <div class="section-label">Blog &amp; actualizaciones</div>
     <h2 class="section-title">Noticias laborales</h2>
     <p class="section-sub">Jurisprudencia, cambios normativos y guías para empleadores y trabajadores.</p>
-    <div class="news-grid">
-      <div class="news-card"><div class="news-date">05 febrero 2016</div><h3>Tendencia actual en materia de Semana Corrida</h3><p>Resumen de jurisprudencia sobre la procedencia del pago del beneficio de semana corrida para trabajadores afectos a remuneración variable.</p></div>
-      <div class="news-card"><div class="news-date">03 marzo 2015</div><h3>¿Qué puede hacer un trabajador ante acoso laboral?</h3><p>El acoso laboral ha sido regulado expresamente por el legislador. Analizamos el Art. 2° del Código del Trabajo y los mecanismos de protección disponibles.</p></div>
-      <div class="news-card"><div class="news-date">28 enero 2015</div><h3>Proyecto de Ley que moderniza las relaciones laborales</h3><p>Los puntos más importantes del proyecto que amplía la cobertura de negociación colectiva y moderniza el sistema de relaciones laborales en Chile.</p></div>
+    <div class="blog-banner">
+      <div class="blog-banner-text">
+        <span class="blog-tag">Nuevo</span>
+        <h3>El Boletín de RRHH<br>Briefing diario</h3>
+        <p>Mantente al día con las últimas novedades en legislación laboral, jurisprudencia y recursos humanos.</p>
+        <a href="blog.html" target="_blank" rel="noopener" class="blog-cta">Ir al blog &#8594;</a>
+      </div>
+      <div class="blog-banner-art">
+        <svg width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="280" height="180" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/><rect x="10" y="10" width="280" height="34" rx="10" fill="#f97316"/><rect x="10" y="32" width="280" height="12" fill="#f97316"/><rect x="26" y="20" width="120" height="9" rx="3" fill="rgba(255,255,255,0.9)"/><rect x="36" y="58" width="140" height="7" rx="3" fill="#f97316" opacity="0.8"/><rect x="36" y="70" width="140" height="4" rx="2" fill="#475569"/><rect x="36" y="78" width="120" height="4" rx="2" fill="#475569"/><rect x="36" y="86" width="130" height="4" rx="2" fill="#475569"/><rect x="36" y="100" width="140" height="60" rx="6" fill="#0f172a" stroke="#334155"/><circle cx="66" cy="130" r="14" fill="#1e40af" opacity="0.5"/><rect x="88" y="122" width="70" height="5" rx="2" fill="#334155"/><rect x="88" y="132" width="55" height="4" rx="2" fill="#1e293b"/><line x1="186" y1="54" x2="186" y2="170" stroke="#334155" stroke-width="1"/><rect x="196" y="58" width="90" height="5" rx="2" fill="#f97316" opacity="0.7"/><rect x="196" y="68" width="90" height="4" rx="2" fill="#475569"/><rect x="196" y="76" width="75" height="4" rx="2" fill="#475569"/><line x1="196" y1="88" x2="286" y2="88" stroke="#334155" stroke-width="1"/><rect x="196" y="96" width="90" height="5" rx="2" fill="#f97316" opacity="0.7"/><rect x="196" y="106" width="90" height="4" rx="2" fill="#475569"/><rect x="196" y="114" width="70" height="4" rx="2" fill="#475569"/><line x1="196" y1="126" x2="286" y2="126" stroke="#334155" stroke-width="1"/><rect x="196" y="134" width="90" height="5" rx="2" fill="#f97316" opacity="0.7"/><rect x="196" y="144" width="80" height="4" rx="2" fill="#475569"/></svg>
+      </div>
     </div>
   </div>
 </section>
