@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de Privacidad · Calculadora de Sueldo Líquido · Remulab.cl</title>
+  <style>
+    :root {
+      --green: #059669;
+      --green-dark: #047857;
+      --text: #111827;
+      --muted: #6B7280;
+      --border: #E5E7EB;
+      --bg: #F9FAFB;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    header {
+      background: linear-gradient(145deg, #059669 0%, #047857 100%);
+      color: white;
+      padding: 40px 24px 36px;
+      text-align: center;
+    }
+    header .brand {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      opacity: 0.8;
+      margin-bottom: 10px;
+    }
+    header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+    header p {
+      font-size: 14px;
+      opacity: 0.75;
+      margin-top: 8px;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 32px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .highlight-card {
+      background: #ECFDF5;
+      border: 2px solid #6EE7B7;
+      border-radius: 16px;
+      padding: 24px 32px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .highlight-icon { font-size: 32px; flex-shrink: 0; margin-top: 2px; }
+    .highlight-text h2 { font-size: 17px; font-weight: 700; color: var(--green-dark); margin-bottom: 6px; }
+    .highlight-text p  { font-size: 14px; color: #065F46; line-height: 1.6; }
+    h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h2 .icon { font-size: 18px; }
+    p { font-size: 14.5px; color: #374151; margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    ul {
+      margin: 10px 0 12px 0;
+      padding-left: 0;
+      list-style: none;
+    }
+    ul li {
+      font-size: 14.5px;
+      color: #374151;
+      padding: 5px 0 5px 22px;
+      position: relative;
+    }
+    ul li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      font-weight: 700;
+    }
+    .meta {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      padding-top: 24px;
+    }
+    .meta a { color: var(--green); text-decoration: none; }
+    footer {
+      background: #111827;
+      color: #9CA3AF;
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+    }
+    footer a { color: #6EE7B7; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Remulab.cl</div>
+  <h1>Política de Privacidad</h1>
+  <p>Calculadora de Sueldo Líquido Chile</p>
+</header>
+
+<div class="container">
+
+  <div class="highlight-card">
+    <div class="highlight-icon">🔒</div>
+    <div class="highlight-text">
+      <h2 style="border:none;padding:0;margin-bottom:6px">Resumen en una línea</h2>
+      <p>Esta app <strong>no recopila, almacena ni comparte ningún dato personal</strong>. Todos los cálculos se realizan directamente en tu dispositivo y ninguna información sale de él.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">👤</span> Responsable</h2>
+    <p>Esta aplicación, <strong>Calculadora de Sueldo Líquido Chile</strong>, es desarrollada y mantenida por <strong>Gonzalo Hurtado</strong> a través de <strong>Remulab.cl</strong>.</p>
+    <p>Para cualquier consulta sobre privacidad puedes escribir a: <a href="mailto:contacto@remulab.cl" style="color:var(--green)">contacto@remulab.cl</a></p>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">🚫</span> Datos que NO recopilamos</h2>
+    <p>La aplicación <strong>no recopila, transmite ni almacena</strong> ninguno de los siguientes datos:</p>
+    <ul>
+      <li>Nombre, RUT u otros datos de identificación personal</li>
+      <li>Monto de sueldo u otros datos económicos ingresados</li>
+      <li>Ubicación geográfica</li>
+      <li>Contactos, cámara, micrófono ni ningún sensor del dispositivo</li>
+      <li>Información del dispositivo (modelo, sistema operativo, etc.)</li>
+      <li>Historial de cálculos realizados</li>
+    </ul>
+    <p>Todos los valores que ingresas en la calculadora se procesan <strong>localmente en tu dispositivo</strong> y no se envían a ningún servidor externo.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">📡</span> Conexión a internet</h2>
+    <p>La app realiza una única consulta de red al cargar: solicita los valores actualizados de <strong>UF, UTM e IMM</strong> desde la API pública de <a href="https://mindicador.cl" target="_blank" rel="noopener" style="color:var(--green)">mindicador.cl</a>.</p>
+    <p>Esta consulta únicamente descarga datos económicos públicos. No se envía ningún dato del usuario en dicha solicitud.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">📋</span> Permisos de la aplicación</h2>
+    <p>La aplicación únicamente solicita permiso de <strong>acceso a internet</strong>, necesario exclusivamente para obtener los indicadores económicos públicos.</p>
+    <p>No solicita ni utiliza ningún otro permiso del dispositivo.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">👦</span> Menores de edad</h2>
+    <p>Esta aplicación está orientada a trabajadores y no recopila ningún tipo de información personal. No está dirigida específicamente a menores de 13 años.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">🔄</span> Cambios en esta política</h2>
+    <p>Si en el futuro se realizaran cambios que impliquen recopilación de datos, esta página será actualizada con anticipación.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">✉️</span> Contacto</h2>
+    <p><strong>Email:</strong> <a href="mailto:contacto@remulab.cl" style="color:var(--green)">contacto@remulab.cl</a><br>
+    <strong>Sitio web:</strong> <a href="https://remulab.cl" target="_blank" style="color:var(--green)">remulab.cl</a></p>
+  </div>
+
+  <div class="meta">
+    Última actualización: Mayo 2026 &nbsp;·&nbsp; <a href="https://remulab.cl">Remulab.cl</a>
+  </div>
+
+</div>
+
+<footer>
+  © 2026 Remulab.cl · Gonzalo Hurtado &nbsp;·&nbsp;
+  <a href="https://remulab.cl">remulab.cl</a>
+</footer>
+
+</body>
+</html>
