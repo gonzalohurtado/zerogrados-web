@@ -335,14 +335,14 @@
         <div class="contact-item"><div class="contact-icon">✉️</div><div><div class="contact-item-label">Correo electrónico</div><div class="contact-item-val"><a href="mailto:contacto@remulab.cl">contacto@remulab.cl</a></div></div></div>
         <div class="contact-item"><div class="contact-icon">🌐</div><div><div class="contact-item-label">Oficina virtual</div><div class="contact-item-val"><a href="https://www.remulab.cl" target="_blank">www.remulab.cl</a></div></div></div>
         <div class="contact-item"><div class="contact-icon">🕐</div><div><div class="contact-item-label">Disponibilidad</div><div class="contact-item-val">Asesoría 24/7 en línea</div></div></div>
-        <div style="margin-top:1.5rem"><a href="#" class="btn-primary" style="display:inline-block">📎 Envíanos tu CV</a></div>
+        <a href="mailto:contacto@remulab.cl?subject=Postulación CV RemuLab" class="btn-primary" style="display:inline-block">📎 Envíanos tu CV</a>
       </div>
       <div class="contact-form-box">
         <h3>Envíanos un mensaje</h3>
         <div class="form-row"><label>Nombre</label><input type="text" placeholder="Tu nombre completo" /></div>
         <div class="form-row"><label>Correo electrónico</label><input type="email" placeholder="tu@correo.cl" /></div>
         <div class="form-row"><label>Mensaje</label><textarea placeholder="¿En qué podemos ayudarte?"></textarea></div>
-        <button class="btn-send">Enviar mensaje</button>
+        <button class="btn-send" onclick="enviarMensaje()">Enviar mensaje</button>
       </div>
     </div>
   </div>
@@ -394,6 +394,13 @@ async function cargarIndicadores() {
   }
 }
 cargarIndicadores();
+  function enviarMensaje(){
+  var nombre = document.querySelector('.form-row input[type="text"]').value;
+  var correo = document.querySelector('.form-row input[type="email"]').value;
+  var mensaje = document.querySelector('.form-row textarea').value;
+  if(!nombre||!correo||!mensaje){alert('Por favor completa todos los campos.');return;}
+  window.location.href='mailto:contacto@remulab.cl?subject=Consulta de '+encodeURIComponent(nombre)+'&body=Nombre: '+encodeURIComponent(nombre)+'%0ANombre: '+encodeURIComponent(correo)+'%0A%0AMensaje:%0A'+encodeURIComponent(mensaje);
+}
 </script>
 </body>
 </html>
