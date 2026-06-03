@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Honorarios | RemuLab</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0f1f38; --navy2: #1a3050; --blue: #2563eb; --blue-light: #eff6ff;
+  --slate: #64748b; --slate-light: #f1f5f9; --white: #ffffff;
+  --border: #e2e8f0; --text: #1e293b; --text-sm: #475569;
+  --green: #059669; --green-light: #ecfdf5;
+  --yellow: #d97706; --yellow-light: #fffbeb;
+  --red: #dc2626; --red-light: #fef2f2;
+}
+body { font-family: 'Inter', sans-serif; background: var(--slate-light); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* NAV */
+nav { background: var(--navy); padding: 0 2rem; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-size: 1.1rem; font-weight: 700; color: #fff; text-decoration: none; letter-spacing: -0.02em; }
+.nav-logo span { color: #60a5fa; }
+.nav-back { font-size: 0.82rem; color: rgba(255,255,255,.5); text-decoration: none; display: flex; align-items: center; gap: 5px; transition: color .2s; }
+.nav-back:hover { color: #fff; }
+
+/* HERO */
+.hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%); color: #fff; padding: 3rem 2rem 4rem; text-align: center; }
+.hero-tag { display: inline-block; background: rgba(37,99,235,.25); color: #93c5fd; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.3rem 1rem; border-radius: 99px; margin-bottom: 1.2rem; }
+.hero h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; letter-spacing: -0.03em; margin-bottom: 0.75rem; }
+.hero p { color: #cbd5e1; font-size: 0.95rem; max-width: 520px; margin: 0 auto; line-height: 1.7; }
+
+/* TASA BADGE */
+.tasa-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 99px; padding: 0.4rem 1.1rem; margin-top: 1.2rem; font-size: 0.82rem; color: rgba(255,255,255,.85); }
+.tasa-badge strong { color: #fcd34d; font-weight: 700; }
+.dot-live { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; flex-shrink: 0; }
+
+/* WRAP */
+.wrap { max-width: 720px; margin: -2rem auto 3rem; padding: 0 1.25rem; flex: 1; }
+
+/* CARD */
+.card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04); overflow: hidden; margin-bottom: 1.25rem; }
+.card-head { padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.card-head h2 { font-size: 0.95rem; font-weight: 600; color: var(--navy); }
+.card-head .icon { width: 32px; height: 32px; background: var(--blue-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+.card-body { padding: 1.5rem; }
+
+/* TOGGLE MODO */
+.modo-toggle { display: flex; background: var(--slate-light); border: 1.5px solid var(--border); border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 1.5rem; }
+.modo-btn { flex: 1; padding: 0.6rem 1rem; border-radius: 7px; border: none; background: transparent; font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 500; color: var(--slate); cursor: pointer; transition: all .2s; text-align: center; }
+.modo-btn.active { background: var(--white); color: var(--navy); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+/* TASA EDITABLE */
+.tasa-row { display: flex; align-items: center; justify-content: space-between; background: var(--yellow-light); border: 1px solid #fde68a; border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; gap: 12px; }
+.tasa-row-label { font-size: 0.82rem; color: #92400e; line-height: 1.4; flex: 1; }
+.tasa-row-label strong { font-weight: 600; display: block; margin-bottom: 2px; }
+.tasa-input-wrap { display: flex; align-items: center; gap: 6px; }
+.tasa-input { width: 70px; height: 36px; padding: 0 8px; border: 1.5px solid #fde68a; border-radius: 7px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; color: #92400e; text-align: center; background: #fff; outline: none; }
+.tasa-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.tasa-pct { font-size: 0.85rem; font-weight: 700; color: #92400e; }
+
+/* INPUT MONTO */
+.monto-label { font-size: 0.78rem; font-weight: 600; color: var(--slate); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+.monto-wrap { position: relative; }
+.monto-prefix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem; font-weight: 500; color: var(--slate); pointer-events: none; }
+.monto-input { width: 100%; height: 56px; padding: 0 1rem 0 2.5rem; border: 2px solid var(--border); border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 1.3rem; font-weight: 600; color: var(--navy); background: #fff; outline: none; transition: border-color .2s; }
+.monto-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.monto-hint { font-size: 0.75rem; color: var(--slate); margin-top: 0.5rem; }
+
+/* BOTON */
+.btn-calc { width: 100%; height: 48px; background: var(--blue); color: #fff; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 1.25rem; transition: background .2s, transform .1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-calc:hover { background: #1d4ed8; }
+.btn-calc:active { transform: scale(.99); }
+
+/* RESULTADOS */
+.results { display: none; }
+.results.visible { display: block; }
+
+.result-total { background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%); color: #fff; border-radius: 14px; padding: 1.5rem 1.75rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.result-total-label { font-size: 0.8rem; color: rgba(255,255,255,.65); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.3rem; }
+.result-total-amount { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 700; letter-spacing: -0.03em; }
+.result-total-caption { font-size: 0.75rem; color: rgba(255,255,255,.5); margin-top: 0.2rem; }
+.result-total-badge { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; padding: 0.5rem 0.9rem; text-align: center; }
+.result-total-badge .rb-val { font-size: 1.3rem; font-weight: 700; color: #fcd34d; }
+.result-total-badge .rb-label { font-size: 0.7rem; color: rgba(255,255,255,.6); }
+
+.result-rows { background: var(--white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1.25rem; }
+.result-row { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1.25rem; border-bottom: 1px solid #f1f5f9; gap: 12px; }
+.result-row:last-child { border-bottom: none; }
+.result-row.highlight { background: var(--blue-light); }
+.result-row.red-row { background: var(--red-light); }
+.result-row.green-row { background: var(--green-light); }
+.r-label { font-size: 0.875rem; color: var(--text-sm); flex: 1; }
+.result-row.highlight .r-label { color: var(--navy); font-weight: 500; }
+.result-row.red-row .r-label { color: #991b1b; font-weight: 500; }
+.result-row.green-row .r-label { color: #065f46; font-weight: 500; }
+.r-value { font-size: 0.875rem; font-weight: 600; color: var(--text); white-space: nowrap; }
+.result-row.highlight .r-value { color: var(--blue); font-size: 0.95rem; }
+.result-row.red-row .r-value { color: var(--red); }
+.result-row.green-row .r-value { color: var(--green); font-size: 0.95rem; }
+
+/* FORMULA BOX */
+.formula-box { background: var(--slate-light); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+.formula-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--slate); margin-bottom: 0.6rem; }
+.formula-text { font-size: 0.82rem; color: var(--text-sm); line-height: 1.6; font-family: 'Courier New', monospace; }
+.formula-text strong { color: var(--navy); }
+
+/* ERROR */
+.error-box { background: var(--red-light); border: 1px solid #fecaca; border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.85rem; color: #991b1b; display: none; margin-top: 0.75rem; }
+
+/* LEGISLACION */
+.leg-card .card-body { padding: 1.25rem 1.5rem; }
+.leg-item { display: flex; gap: 12px; padding: 0.85rem 0; border-bottom: 1px solid #f1f5f9; }
+.leg-item:last-child { border-bottom: none; }
+.leg-art { flex-shrink: 0; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--blue); background: var(--blue-light); border-radius: 6px; padding: 3px 8px; height: fit-content; white-space: nowrap; margin-top: 1px; }
+.leg-text { font-size: 0.82rem; color: var(--text-sm); line-height: 1.6; }
+.leg-text strong { color: var(--text); font-weight: 600; }
+
+/* FOOTER */
+footer { background: var(--navy); color: rgba(255,255,255,.45); text-align: center; padding: 1.5rem 1rem; font-size: 0.78rem; margin-top: auto; }
+footer strong { color: rgba(255,255,255,.7); }
+footer a { color: #60a5fa; text-decoration: none; }
+
+@media (max-width: 500px) {
+  .result-total { flex-direction: column; }
+  .modo-btn { font-size: 0.78rem; padding: 0.55rem 0.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="https://www.remulab.cl">Remu<span>Lab</span></a>
+  <a class="nav-back" href="https://www.remulab.cl/#calculadoras">← Volver al sitio</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Herramienta gratuita · RemuLab</div>
+  <h1>Calculadora de Honorarios</h1>
+  <p>Calcula el monto bruto o neto de una boleta de honorarios según la retención vigente del Código Tributario chileno.</p>
+  <div class="tasa-badge">
+    <div class="dot-live"></div>
+    Tasa de retención 2026: <strong>15,25%</strong> — Ley 21.133
+  </div>
+</div>
+
+<!-- CONTENIDO -->
+<div class="wrap">
+
+  <!-- CALCULADORA -->
+  <div class="card">
+    <div class="card-head">
+      <div class="icon">🧮</div>
+      <h2>Calculadora bidireccional</h2>
+    </div>
+    <div class="card-body">
+
+      <!-- TOGGLE -->
+      <div class="modo-toggle">
+        <button class="modo-btn active" id="btnBrutoNeto" onclick="setModo('bn')">💰 Bruto → Neto</button>
+        <button class="modo-btn" id="btnNetoBruto" onclick="setModo('nb')">🎯 Neto → Bruto</button>
+      </div>
+
+      <!-- TASA EDITABLE -->
+      <div class="tasa-row">
+        <div class="tasa-row-label">
+          <strong>Tasa de retención</strong>
+          Vigente según Ley 21.133 · puedes editar si cambia
+        </div>
+        <div class="tasa-input-wrap">
+          <input class="tasa-input" type="number" id="tasaInput" value="15.25" min="1" max="50" step="0.25">
+          <span class="tasa-pct">%</span>
+        </div>
+      </div>
+
+      <!-- MONTO -->
+      <div id="labelMonto" class="monto-label">Honorario bruto (monto total de la boleta)</div>
+      <div class="monto-wrap">
+        <span class="monto-prefix">$</span>
+        <input class="monto-input" type="number" id="montoInput" placeholder="0" min="0" oninput="calcular()">
+      </div>
+      <div id="hintMonto" class="monto-hint">Ingresa el monto total que aparece en la boleta de honorarios.</div>
+
+      <button class="btn-calc" onclick="calcular()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/><line x1="15" y1="16" x2="15" y2="20"/><line x1="13" y1="18" x2="17" y2="18"/></svg>
+        Calcular
+      </button>
+      <div class="error-box" id="errorBox">Por favor ingresa un monto válido mayor a cero.</div>
+    </div>
+  </div>
+
+  <!-- RESULTADOS -->
+  <div class="results" id="results">
+
+    <div class="result-total" id="resultTotal">
+      <div>
+        <div class="result-total-label" id="rtLabel">Honorario neto a recibir</div>
+        <div class="result-total-amount" id="rtAmount">$ 0</div>
+        <div class="result-total-caption" id="rtCaption">Lo que recibes en tu cuenta</div>
+      </div>
+      <div class="result-total-badge">
+        <div class="rb-val" id="rbPct">17%</div>
+        <div class="rb-label">Retención</div>
+      </div>
+    </div>
+
+    <div class="result-rows">
+      <div class="result-row highlight">
+        <span class="r-label" id="r1Label">Honorario bruto (boleta)</span>
+        <span class="r-value" id="r1Value">$ 0</span>
+      </div>
+      <div class="result-row red-row">
+        <span class="r-label" id="r2Label">Retención (15,25%) — paga el contratante al SII</span>
+        <span class="r-value" id="r2Value">$ 0</span>
+      </div>
+      <div class="result-row green-row">
+        <span class="r-label" id="r3Label">Honorario neto — lo que recibes tú</span>
+        <span class="r-value" id="r3Value">$ 0</span>
+      </div>
+    </div>
+
+    <!-- FÓRMULA -->
+    <div class="formula-box" id="formulaBox">
+      <div class="formula-title">📐 Fórmula aplicada</div>
+      <div class="formula-text" id="formulaText"></div>
+    </div>
+
+  </div>
+
+  <!-- LEGISLACIÓN -->
+  <div class="card leg-card">
+    <div class="card-head">
+      <div class="icon">⚖️</div>
+      <h2>Marco legal aplicable</h2>
+    </div>
+    <div class="card-body">
+      <div class="leg-item">
+        <span class="leg-art">Art. 74 N°2 LIR</span>
+        <div class="leg-text"><strong>Retención sobre honorarios:</strong> Las personas que paguen rentas del Art. 42 N°2 (honorarios) a contribuyentes no obligados a declarar renta, deben retener y enterar en arcas fiscales el porcentaje que señale la ley sobre el monto bruto de los honorarios.</div>
+      </div>
+      <div class="leg-item">
+        <span class="leg-art">Art. 42 N°2 LIR</span>
+        <div class="leg-text"><strong>Rentas de trabajo independiente:</strong> Se gravan las remuneraciones de profesionales o personas que realicen actividades lucrativas de manera independiente, incluyendo honorarios, y las rentas obtenidas por personas no domiciliadas ni residentes en Chile.</div>
+      </div>
+      <div class="leg-item">
+        <span class="leg-art">Ley 21.133</span>
+        <div class="leg-text"><strong>Trabajadores Independientes — cotizaciones obligatorias:</strong> Establece el aumento gradual de la tasa de retención de honorarios desde 10% (2018) hasta 17% (2028), para financiar las cotizaciones previsionales y de salud obligatorias de los trabajadores independientes. En 2026 la tasa vigente es <strong>15,25%</strong>.</div>
+      </div>
+      <div class="leg-item">
+        <span class="leg-art">Ley 21.133 Art. 3°</span>
+        <div class="leg-text"><strong>Plan de aumento gradual de la retención:</strong>
+          2018: 10% · 2019: 10,75% · 2020: 11,5% · 2021: 12,25% · 2022: 13% · 2023: 13,75% · 2024: 14,5% · <strong>2025: 15,25% · 2026: 15,25%</strong> · 2027: 16% · <strong>2028: 17%</strong> (tope máximo)<br><br>
+          La retención seguirá incrementándose anualmente hasta alcanzar el tope del <strong>17% en el año 2028</strong>, según el SII.</div>
+      </div>
+      <div class="leg-item">
+        <span class="leg-art">D.L. 824 Art. 65</span>
+        <div class="leg-text"><strong>Declaración anual:</strong> Los trabajadores independientes que perciban honorarios deben incluirlos en su declaración anual de renta (Formulario 22), donde se reliquida el impuesto global complementario considerando las retenciones ya pagadas.</div>
+      </div>
+      <div class="leg-item">
+        <span class="leg-art">Circular SII</span>
+        <div class="leg-text"><strong>Boleta electrónica obligatoria:</strong> Desde el 1 de marzo de 2021, la emisión de boletas de honorarios es exclusivamente electrónica a través del sistema del SII (sii.cl). El contratante retiene el porcentaje correspondiente y lo declara en el Formulario 29 mensual.</div>
+      </div>
+      <div style="margin-top:1rem;padding:0.75rem 1rem;background:var(--yellow-light);border:1px solid #fde68a;border-radius:8px;font-size:0.78rem;color:#92400e;line-height:1.6;">
+        ⚠️ <strong>Nota:</strong> Esta calculadora es de carácter referencial. Los montos calculados son estimativos. Para cálculos definitivos consulta con un contador o visita <strong>sii.cl</strong> y <strong>dt.gob.cl</strong>.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p><strong>Calculadora de Boletas de Honorarios</strong> · Herramienta gratuita de <a href="https://www.remulab.cl">RemuLab</a></p>
+  <p style="margin-top:6px">Creado por <strong>Gonzalo Hurtado</strong> · Basado en legislación tributaria chilena vigente · © 2026</p>
+</footer>
+
+<script>
+  var modo = 'bn'; // bn = bruto a neto, nb = neto a bruto
+
+  function setModo(m) {
+    modo = m;
+    document.getElementById('btnBrutoNeto').classList.toggle('active', m === 'bn');
+    document.getElementById('btnNetoBruto').classList.toggle('active', m === 'nb');
+    if (m === 'bn') {
+      document.getElementById('labelMonto').textContent = 'Honorario bruto (monto total de la boleta)';
+      document.getElementById('hintMonto').textContent = 'Ingresa el monto total que aparece en la boleta de honorarios.';
+    } else {
+      document.getElementById('labelMonto').textContent = 'Honorario neto (lo que quieres recibir)';
+      document.getElementById('hintMonto').textContent = 'Ingresa el monto que quieres recibir en tu cuenta y te calculamos el bruto que debes cobrar.';
+    }
+    document.getElementById('montoInput').value = '';
+    document.getElementById('results').classList.remove('visible');
+    document.getElementById('errorBox').style.display = 'none';
+  }
+
+  function fmt(n) {
+    return '$ ' + Math.round(n).toLocaleString('es-CL');
+  }
+
+  function calcular() {
+    var monto = parseFloat(document.getElementById('montoInput').value);
+    var tasa = parseFloat(document.getElementById('tasaInput').value) / 100;
+    var errorBox = document.getElementById('errorBox');
+
+    if (!monto || monto <= 0 || isNaN(monto)) {
+      errorBox.style.display = 'block';
+      document.getElementById('results').classList.remove('visible');
+      return;
+    }
+    errorBox.style.display = 'none';
+
+    var bruto, neto, retencion;
+
+    if (modo === 'bn') {
+      bruto = monto;
+      retencion = bruto * tasa;
+      neto = bruto - retencion;
+    } else {
+      neto = monto;
+      bruto = neto / (1 - tasa);
+      retencion = bruto * tasa;
+    }
+
+    var pctStr = (tasa * 100).toLocaleString('es-CL', {minimumFractionDigits: 0, maximumFractionDigits: 2});
+
+    // Resultado principal
+    if (modo === 'bn') {
+      document.getElementById('rtLabel').textContent = 'Honorario neto a recibir';
+      document.getElementById('rtAmount').textContent = fmt(neto);
+      document.getElementById('rtCaption').textContent = 'Lo que recibes en tu cuenta bancaria';
+      document.getElementById('r1Label').textContent = 'Honorario bruto (monto total de la boleta)';
+      document.getElementById('r1Value').textContent = fmt(bruto);
+      document.getElementById('r3Label').textContent = 'Honorario neto — lo que recibes tú';
+      document.getElementById('r3Value').textContent = fmt(neto);
+      document.getElementById('formulaText').innerHTML =
+        '<strong>Neto</strong> = Bruto × (1 − ' + pctStr + '%) <br>' +
+        fmt(neto) + ' = ' + fmt(bruto) + ' × ' + (1 - tasa).toFixed(4);
+    } else {
+      document.getElementById('rtLabel').textContent = 'Honorario bruto a cobrar';
+      document.getElementById('rtAmount').textContent = fmt(bruto);
+      document.getElementById('rtCaption').textContent = 'Monto total que debe decir la boleta';
+      document.getElementById('r1Label').textContent = 'Honorario bruto (monto total de la boleta)';
+      document.getElementById('r1Value').textContent = fmt(bruto);
+      document.getElementById('r3Label').textContent = 'Honorario neto — lo que recibes tú';
+      document.getElementById('r3Value').textContent = fmt(neto);
+      document.getElementById('formulaText').innerHTML =
+        '<strong>Bruto</strong> = Neto ÷ (1 − ' + pctStr + '%) <br>' +
+        fmt(bruto) + ' = ' + fmt(neto) + ' ÷ ' + (1 - tasa).toFixed(4);
+    }
+
+    document.getElementById('r2Label').textContent = 'Retención (' + pctStr + '%) — paga el contratante al SII';
+    document.getElementById('r2Value').textContent = fmt(retencion);
+    document.getElementById('rbPct').textContent = pctStr + '%';
+
+    document.getElementById('results').classList.add('visible');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Calcular automáticamente al cambiar la tasa
+  document.getElementById('tasaInput').addEventListener('input', function() {
+    var m = parseFloat(document.getElementById('montoInput').value);
+    if (m && m > 0) calcular();
+  });
+
+  // Enter para calcular
+  document.getElementById('montoInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') calcular();
+  });
+</script>
+
+</body>
+</html>
